@@ -1,20 +1,21 @@
 package com.paul.apiPlatform.controller;
 
 import com.paul.apiPlatform.annotation.AuthCheck;
-import com.paul.apiPlatform.common.BaseResponse;
-import com.paul.apiPlatform.common.DeleteRequest;
-import com.paul.apiPlatform.common.ErrorCode;
-import com.paul.apiPlatform.common.ResultUtils;
+import com.paul.apiPlatform.common.*;
 import com.paul.apiPlatform.constant.UserConstant;
 import com.paul.apiPlatform.exception.BusinessException;
 import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoAddRequest;
 import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import com.paul.apiPlatform.model.entity.InterfaceInfo;
 import com.paul.apiPlatform.model.entity.User;
+import com.paul.apiPlatform.model.enums.InterfaceInfoStatusEnum;
 import com.paul.apiPlatform.service.InterfaceInfoService;
 import com.paul.apiPlatform.service.UserService;
+import com.paul.paulapiclientsdk.client.PaulApiClient;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -34,6 +35,8 @@ public class InterfaceInfoController {
 
     @Resource
     private UserService userService;
+    @Autowired
+    private PaulApiClient paulApiClient;
 
     // region 增删改查
 
@@ -126,6 +129,69 @@ public class InterfaceInfoController {
         }
         InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
         return ResultUtils.success(interfaceInfo);
+    }
+
+    /**
+     * 上线接口
+     * @param idRequest
+     * @param request
+     * @return
+     */
+    @AuthCheck(mustRole = "isAdmin")
+    @PostMapping("/online")
+    public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody IdRequest idRequest, HttpServletRequest request) {
+        if(idRequest == null || idRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = idRequest.getId();
+        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
+        if(oldInterfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        com.paul.paulapiclientsdk.model.User user = new com.paul.paulapiclientsdk.model.User();
+        user.setUsername("test");
+        String username = paulApiClient.getUserNameByPost(user);
+        if(StringUtils.isBlank(username)){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        InterfaceInfo interfaceInfo = new InterfaceInfo();
+        interfaceInfo.setUserId(id);
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
+        boolean result = interfaceInfoService.save(interfaceInfo);
+        return ResultUtils.success(result);
+
+
+    }
+
+    /**
+     * 下线接口
+     * @param idRequest
+     * @param request
+     * @return
+     */
+    @AuthCheck(mustRole = "isAdmin")
+    @PostMapping("/offline")
+    public BaseResponse<Boolean> offlineInterfaceInfo(@RequestBody IdRequest idRequest, HttpServletRequest request){
+        if(idRequest == null || idRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = idRequest.getId();
+        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
+        if(oldInterfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        com.paul.paulapiclientsdk.model.User user = new com.paul.paulapiclientsdk.model.User();
+        user.setUsername("test");
+        String username = paulApiClient.getUserNameByPost(user);
+        if(StringUtils.isBlank(username)){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        InterfaceInfo interfaceInfo = new InterfaceInfo();
+        interfaceInfo.setUserId(id);
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
+        boolean result = interfaceInfoService.save(interfaceInfo);
+        return ResultUtils.success(result);
+
     }
 
 
