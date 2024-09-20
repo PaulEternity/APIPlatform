@@ -8,7 +8,7 @@
 		<version>2.7.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.Paul</groupId>
+	<groupId>com.paul</groupId>
 	<artifactId>paulapi-client-sdk</artifactId>
 	<version>0.0.1</version>
 	<name>paulapi-client-sdk</name>

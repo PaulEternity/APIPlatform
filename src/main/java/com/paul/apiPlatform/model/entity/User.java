@@ -63,6 +63,9 @@ public class User implements Serializable {
     /**
      * 是否删除
      */
+
+    private String accessKey;
+    private String secretKey;
     @TableLogic
     private Integer isDelete;
 

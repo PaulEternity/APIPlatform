@@ -1,10 +1,12 @@
 package com.paul.apiPlatform.controller;
 
+import com.google.gson.Gson;
 import com.paul.apiPlatform.annotation.AuthCheck;
 import com.paul.apiPlatform.common.*;
 import com.paul.apiPlatform.constant.UserConstant;
 import com.paul.apiPlatform.exception.BusinessException;
 import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoAddRequest;
+import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import com.paul.apiPlatform.model.entity.InterfaceInfo;
 import com.paul.apiPlatform.model.entity.User;
@@ -191,6 +193,37 @@ public class InterfaceInfoController {
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
         boolean result = interfaceInfoService.save(interfaceInfo);
         return ResultUtils.success(result);
+
+    }
+
+    /**
+     * 测试调用
+     * @param interfaceInfoInvokeRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/invoke")
+    public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest, HttpServletRequest request){
+        if(interfaceInfoInvokeRequest == null || interfaceInfoInvokeRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = interfaceInfoInvokeRequest.getId();
+        String userRequestParams = interfaceInfoInvokeRequest.getUserResponseParams();
+        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
+        if(oldInterfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        if(oldInterfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        String accessKey = loginUser.getAccessKey();
+        String secretKey = loginUser.getSecretKey();
+        PaulApiClient tempClient = new PaulApiClient(accessKey, secretKey);
+        Gson gson = new Gson();
+        com.paul.paulapiclientsdk.model.User user = gson.fromJson(userRequestParams, com.paul.paulapiclientsdk.model.User.class);
+        String usernameByPost = tempClient.getUserNameByPost(user);
+        return ResultUtils.success(usernameByPost);
 
     }
 
