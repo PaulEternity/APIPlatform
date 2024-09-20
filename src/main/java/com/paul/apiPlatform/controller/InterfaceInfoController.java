@@ -37,6 +37,7 @@ public class InterfaceInfoController {
 
     @Resource
     private UserService userService;
+
     @Autowired
     private PaulApiClient paulApiClient;
 
