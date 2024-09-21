@@ -1,12 +1,16 @@
 package com.paul.apiPlatform.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.paul.apiPlatform.annotation.AuthCheck;
 import com.paul.apiPlatform.common.*;
+import com.paul.apiPlatform.constant.CommonConstant;
 import com.paul.apiPlatform.constant.UserConstant;
 import com.paul.apiPlatform.exception.BusinessException;
 import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoAddRequest;
 import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
+import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.paul.apiPlatform.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import com.paul.apiPlatform.model.entity.InterfaceInfo;
 import com.paul.apiPlatform.model.entity.User;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 帖子接口
@@ -226,6 +231,54 @@ public class InterfaceInfoController {
         String usernameByPost = tempClient.getUserNameByPost(user);
         return ResultUtils.success(usernameByPost);
 
+    }
+
+    /**
+     * 获取列表（仅管理员可使用）
+     *
+     * @param interfaceInfoQueryRequest
+     * @return
+     */
+    @AuthCheck(mustRole = "admin")
+    @GetMapping("/list")
+    public BaseResponse<List<InterfaceInfo>> listInterfaceInfo(InterfaceInfoQueryRequest interfaceInfoQueryRequest) {
+        InterfaceInfo interfaceInfoQuery = new InterfaceInfo();
+        if (interfaceInfoQueryRequest != null) {
+            BeanUtils.copyProperties(interfaceInfoQueryRequest, interfaceInfoQuery);
+        }
+        QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
+        List<InterfaceInfo> interfaceInfoList = interfaceInfoService.list(queryWrapper);
+        return ResultUtils.success(interfaceInfoList);
+    }
+
+
+    /**
+     * 分页获取列表
+     */
+    @GetMapping("/list/page")
+    public BaseResponse<com.baomidou.mybatisplus.extension.plugins.pagination.Page<InterfaceInfo>> listInterfaceInfoByPage(InterfaceInfoQueryRequest interfaceInfoQueryRequest, HttpServletRequest request) {
+        if (interfaceInfoQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        InterfaceInfo interfaceInfoQuery = new InterfaceInfo();
+        BeanUtils.copyProperties(interfaceInfoQueryRequest, interfaceInfoQuery);
+        long current = interfaceInfoQueryRequest.getCurrent();
+        long size = interfaceInfoQueryRequest.getPageSize();
+        String sortField = interfaceInfoQueryRequest.getSortField();
+        String sortOrder = interfaceInfoQueryRequest.getSortOrder();
+        String description = interfaceInfoQuery.getDescription();
+        // description 需支持模糊搜索
+        interfaceInfoQuery.setDescription(null);
+        // 限制爬虫
+        if (size > 50) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
+        queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
+        queryWrapper.orderBy(StringUtils.isNotBlank(sortField),
+                sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size), queryWrapper);
+        return ResultUtils.success(interfaceInfoPage);
     }
 
 
