@@ -1,1 +1,8 @@
-spring.application.name=paulapi-interface
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+paulapi:
+  client:
+    secret-key: paul
+    access-key: abcdefgh
