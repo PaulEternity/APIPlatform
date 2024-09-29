@@ -36,3 +36,12 @@ paulapi:
   client:
     access-key: paul
     secret-key: abcdefgh
+dubbo:
+  application:
+    name: dubbo-springboot-demo-provider
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    id: nacos-registry
+    address: nacos://localhost:8848

@@ -1,4 +1,4 @@
-package com.paul.paulapigateway;
+package com.paul;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
