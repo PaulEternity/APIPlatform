@@ -11,14 +11,12 @@ import com.paul.apiPlatform.model.dto.UserInterfaceInfo.UserInterfaceInfoAddRequ
 import com.paul.apiPlatform.model.dto.UserInterfaceInfo.UserInterfaceInfoQueryRequest;
 import com.paul.apiPlatform.model.dto.UserInterfaceInfo.UserInterfaceInfoUpdateRequest;
 import com.paul.apiPlatform.model.entity.User;
-import com.paul.apiPlatform.model.entity.UserInterfaceInfo;
 import com.paul.apiPlatform.service.UserInterfaceInfoService;
 import com.paul.apiPlatform.service.UserService;
-import com.paul.paulapiclientsdk.client.PaulApiClient;
+import com.paul.paulapicommon.model.entity.UserInterfaceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

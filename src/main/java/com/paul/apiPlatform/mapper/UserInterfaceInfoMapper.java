@@ -1,7 +1,7 @@
 package com.paul.apiPlatform.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.paul.apiPlatform.model.entity.UserInterfaceInfo;
+import com.paul.paulapicommon.model.entity.UserInterfaceInfo;
 
 /**
 * @author 30420
