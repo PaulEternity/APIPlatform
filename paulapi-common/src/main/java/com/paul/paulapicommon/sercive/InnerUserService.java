@@ -10,7 +10,7 @@ import com.paul.paulapicommon.model.entity.User;
  *
  * @author yupi
  */
-public interface InnerUserService extends IService<User> {
+public interface InnerUserService {
     User getInvokeUser(String accessKey);
 
 

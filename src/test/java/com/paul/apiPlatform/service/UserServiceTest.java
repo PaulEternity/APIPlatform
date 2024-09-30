@@ -1,6 +1,6 @@
 package com.paul.apiPlatform.service;
 
-import com.paul.apiPlatform.model.entity.User;
+import com.paul.paulapicommon.model.entity.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

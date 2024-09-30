@@ -1,7 +1,7 @@
 package com.paul.apiPlatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.paul.apiPlatform.model.entity.InterfaceInfo;
+import com.paul.paulapicommon.model.entity.InterfaceInfo;
 
 /**
 * @author 30420

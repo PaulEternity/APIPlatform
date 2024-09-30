@@ -2,7 +2,7 @@ package com.paul.apiPlatform.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.paul.apiPlatform.model.entity.User;
+import com.paul.paulapicommon.model.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
 

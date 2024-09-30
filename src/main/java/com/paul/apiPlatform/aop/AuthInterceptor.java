@@ -2,10 +2,10 @@ package com.paul.apiPlatform.aop;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.paul.apiPlatform.common.ErrorCode;
-import com.paul.apiPlatform.model.entity.User;
 import com.paul.apiPlatform.annotation.AuthCheck;
 import com.paul.apiPlatform.exception.BusinessException;
 import com.paul.apiPlatform.service.UserService;
+import com.paul.paulapicommon.model.entity.User;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

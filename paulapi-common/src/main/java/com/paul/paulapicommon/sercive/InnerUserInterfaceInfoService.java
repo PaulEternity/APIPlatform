@@ -11,8 +11,8 @@ import com.paul.paulapicommon.model.entity.UserInterfaceInfo;
 * @description 针对表【user_interface_info(apiplatform.`interface_info`)】的数据库操作Service
 * @createDate 2024-09-20 14:02:00
 */
-public interface InnerUserInterfaceInfoService extends IService<UserInterfaceInfo> {
+public interface InnerUserInterfaceInfoService {
 
-    InterfaceInfo getInterfaceInfo(String path,String method);
+    boolean invokeCount(long interfaceInfoId, long userId);
 
 }
