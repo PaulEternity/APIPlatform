@@ -1,5 +1,6 @@
 package com.paul.apiPlatform.controller;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
@@ -29,8 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
- * 帖子接口
- *
+ * 对接口的操作
  */
 @RestController
 @RequestMapping("/interfaceInfo")
@@ -63,10 +63,14 @@ public class InterfaceInfoController {
         InterfaceInfo interfaceInfo = new InterfaceInfo();
         BeanUtils.copyProperties(interfaceInfoAddRequest, interfaceInfo);
         String description = interfaceInfoAddRequest.getDescription();
+        interfaceInfo.setDescription(description);
         interfaceInfoService.validInterfaceInfo(interfaceInfo, true);
         User loginUser = userService.getLoginUser(request);
         interfaceInfo.setUserId(loginUser.getId());
         boolean result = interfaceInfoService.save(interfaceInfo);
+        if(!result){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
         long newInterfaceInfoId = interfaceInfo.getId();
         return ResultUtils.success(newInterfaceInfoId);
     }
@@ -88,6 +92,9 @@ public class InterfaceInfoController {
         // 判断是否存在
         InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
 //        ThrowUtils.throwIf(oldInterfaceInfo == null, ErrorCode.NOT_FOUND_ERROR);
+        if (oldInterfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
         // 仅本人或管理员可删除
         if (!oldInterfaceInfo.getUserId().equals(user.getId()) && !userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
@@ -103,22 +110,27 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody InterfaceInfoUpdateRequest interfaceInfoUpdateRequest) {
+//    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody InterfaceInfoUpdateRequest interfaceInfoUpdateRequest,
+                                                     HttpServletRequest request) {
         if (interfaceInfoUpdateRequest == null || interfaceInfoUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         InterfaceInfo interfaceInfo = new InterfaceInfo();
         BeanUtils.copyProperties(interfaceInfoUpdateRequest, interfaceInfo);
         String description = interfaceInfoUpdateRequest.getDescription();
-//        if (description != null) {
-//            interfaceInfo.setDescription(JSONUtil.toJsonStr(description));
-//        }
+        if (description != null) {
+            interfaceInfo.setDescription(JSONUtil.toJsonStr(description));
+        }
         // 参数校验
         interfaceInfoService.validInterfaceInfo(interfaceInfo, false);
         long id = interfaceInfoUpdateRequest.getId();
+        User user = userService.getLoginUser(request);
         // 判断是否存在
         InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
+        if(!oldInterfaceInfo.getUserId().equals(user.getId())&& ! userService.isAdmin(request)){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
 //        ThrowUtils.throwIf(oldInterfaceInfo == null, ErrorCode.NOT_FOUND_ERROR);
         boolean result = interfaceInfoService.updateById(interfaceInfo);
         return ResultUtils.success(result);
@@ -145,7 +157,7 @@ public class InterfaceInfoController {
      * @param request
      * @return
      */
-    @AuthCheck(mustRole = "isAdmin")
+    @AuthCheck(mustRole = "admin")
     @PostMapping("/online")
     public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody IdRequest idRequest, HttpServletRequest request) {
         if(idRequest == null || idRequest.getId() <= 0) {
@@ -188,12 +200,7 @@ public class InterfaceInfoController {
         if(oldInterfaceInfo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        com.paul.paulapiclientsdk.model.User user = new com.paul.paulapiclientsdk.model.User();
-        user.setUsername("test");
-        String username = paulApiClient.getUserNameByPost(user);
-        if(StringUtils.isBlank(username)){
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
-        }
+
         InterfaceInfo interfaceInfo = new InterfaceInfo();
         interfaceInfo.setUserId(id);
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
@@ -220,7 +227,7 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
         if(oldInterfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"接口已关闭");
         }
         User loginUser = userService.getLoginUser(request);
         String accessKey = loginUser.getAccessKey();
@@ -277,7 +284,7 @@ public class InterfaceInfoController {
         queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
         queryWrapper.orderBy(StringUtils.isNotBlank(sortField),
                 sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size), queryWrapper);
+        Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size), queryWrapper);
         return ResultUtils.success(interfaceInfoPage);
     }
 

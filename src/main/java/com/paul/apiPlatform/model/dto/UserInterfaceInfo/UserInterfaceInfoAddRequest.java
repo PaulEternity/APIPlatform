@@ -36,10 +36,6 @@ public class UserInterfaceInfoAddRequest implements Serializable {
      */
     private Integer leftNum;
 
-    /**
-     * 接口状态0:关闭,1:开启
-     */
-    private Integer status;
 
 
 

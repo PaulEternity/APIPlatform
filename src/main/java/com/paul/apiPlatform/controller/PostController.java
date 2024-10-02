@@ -25,11 +25,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-/**
- * 帖子接口
- *
- * @author yupi
- */
+
 @RestController
 @RequestMapping("/post")
 @Slf4j

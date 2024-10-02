@@ -3,7 +3,7 @@ package com.paul.apiPlatform.constant;
 /**
  * 通用常量
  *
- * @author yupi
+ * @author paul
  */
 public interface CommonConstant {
 

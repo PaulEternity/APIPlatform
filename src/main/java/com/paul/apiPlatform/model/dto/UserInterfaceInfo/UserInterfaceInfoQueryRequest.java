@@ -49,6 +49,4 @@ public class UserInterfaceInfoQueryRequest extends PageRequest implements Serial
     private Integer status;
 
 
-
-    private Integer isDeleted;
 }

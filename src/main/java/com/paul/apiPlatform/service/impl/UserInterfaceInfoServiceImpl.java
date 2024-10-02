@@ -45,7 +45,7 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         UpdateWrapper<UserInterfaceInfo> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("interfaceInfoId", interfaceInfoId);
         updateWrapper.eq("userId", userId);
-        updateWrapper.gt("leftNum", 0);
+//        updateWrapper.gt("leftNum", 0);
         updateWrapper.setSql("leftNum = leftNum - 1,totalNum = totalNum + 1");
 
         return this.update(updateWrapper);

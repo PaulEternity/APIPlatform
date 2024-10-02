@@ -60,6 +60,9 @@ public class UserInterfaceInfoController {
         User loginUser = userService.getLoginUser(request);
         userInterfaceInfo.setUserId(loginUser.getId());
         boolean result = userInterfaceInfoService.save(userInterfaceInfo);
+        if(!result){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR);
+        }
         long newInterfaceInfoId = userInterfaceInfo.getId();
         return ResultUtils.success(newInterfaceInfoId);
     }
@@ -81,6 +84,9 @@ public class UserInterfaceInfoController {
         long id = deleteRequest.getId();
         // 判断是否存在
         UserInterfaceInfo oldInterfaceInfo = userInterfaceInfoService.getById(id);
+        if(oldInterfaceInfo == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
 //        ThrowUtils.throwIf(oldInterfaceInfo == null, ErrorCode.NOT_FOUND_ERROR);
         // 仅本人或管理员可删除
         if (!oldInterfaceInfo.getUserId().equals(user.getId()) && !userService.isAdmin(request)) {
@@ -98,21 +104,23 @@ public class UserInterfaceInfoController {
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody UserInterfaceInfoUpdateRequest userInterfaceInfoUpdateRequest) {
+    public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody UserInterfaceInfoUpdateRequest userInterfaceInfoUpdateRequest,
+                                                     HttpServletRequest request) {
         if (userInterfaceInfoUpdateRequest == null || userInterfaceInfoUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         UserInterfaceInfo userInterfaceInfo = new UserInterfaceInfo();
         BeanUtils.copyProperties(userInterfaceInfoUpdateRequest, userInterfaceInfo);
-//        if (description != null) {
-//            userInterfaceInfo.setDescription(JSONUtil.toJsonStr(description));
-//        }
         // 参数校验
         userInterfaceInfoService.validUserInterfaceInfo(userInterfaceInfo, false);
         long id = userInterfaceInfoUpdateRequest.getId();
+        User user = userService.getLoginUser(request);
         // 判断是否存在
         UserInterfaceInfo oldUserInterfaceInfo = userInterfaceInfoService.getById(id);
-//        ThrowUtils.throwIf(oldInterfaceInfo == null, ErrorCode.NOT_FOUND_ERROR);
+        if(oldUserInterfaceInfo == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        if(!oldUserInterfaceInfo.getUserId().equals(user.getId()) && !userService.isAdmin(request)){}
         boolean result = userInterfaceInfoService.updateById(userInterfaceInfo);
         return ResultUtils.success(result);
     }

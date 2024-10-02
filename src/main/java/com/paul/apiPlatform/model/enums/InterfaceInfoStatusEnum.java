@@ -11,7 +11,7 @@ public enum InterfaceInfoStatusEnum {
     private final String text;
     private final int value;
 
-    private InterfaceInfoStatusEnum(String text, int value) {
+    InterfaceInfoStatusEnum(String text, int value) {
         this.text = text;
         this.value = value;
     }

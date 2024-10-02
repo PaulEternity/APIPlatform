@@ -3,7 +3,7 @@ package com.paul.apiPlatform.common;
 /**
  * 错误码
  *
- * @author yupi
+ * @author paul
  */
 public enum ErrorCode {
 

@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 
 import javax.annotation.Resource;
-import java.util.prefs.BackingStoreException;
+
 
 @DubboService
 public class InnerUserServiceImpl implements InnerUserService {

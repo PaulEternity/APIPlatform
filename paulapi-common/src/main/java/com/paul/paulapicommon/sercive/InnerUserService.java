@@ -8,7 +8,7 @@ import com.paul.paulapicommon.model.entity.User;
 /**
  * 用户服务
  *
- * @author yupi
+ * @author paul
  */
 public interface InnerUserService {
     User getInvokeUser(String accessKey);

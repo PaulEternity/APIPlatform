@@ -1,6 +1,8 @@
 package com.paul.paulapigateway;
 
 import com.paul.paulapiclientsdk.utils.SignUtils;
+import com.paul.paulapicommon.model.entity.InterfaceInfo;
+import com.paul.paulapicommon.model.entity.User;
 import com.paul.paulapicommon.sercive.InnerInterfaceInfoService;
 import com.paul.paulapicommon.sercive.InnerUserInterfaceInfoService;
 import com.paul.paulapicommon.sercive.InnerUserService;
@@ -27,11 +29,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
 public class CustomGlobalFilter implements GlobalFilter, Ordered {
     private static final List<String> IP_WHITE_LIST = Arrays.asList("127.0.0.1");
+
+    private static final String INTERFACE_HOST = "http://localhost:8123";
 
     @DubboReference
     private InnerUserService innerUserService;
@@ -43,63 +48,73 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
     private InnerUserInterfaceInfoService innerUserInterfaceInfoService;
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) { //过滤器
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        // 1. 请求日志
         ServerHttpRequest request = exchange.getRequest();
-        log.info("请求唯一标识"+request.getId());
-        log.info("请求路径"+request.getPath().value());
-        log.info("请求方法"+request.getMethod());
-        log.info("请求参数"+request.getQueryParams().toString());
+        String path = INTERFACE_HOST + request.getPath().value();
+        String method = Objects.requireNonNull(request.getMethod()).toString();
+        log.info("请求唯一标识：" + request.getId());
+        log.info("请求路径：" + path);
+        log.info("请求方法：" + method);
+        log.info("请求参数：" + request.getQueryParams());
         String sourceAddress = request.getLocalAddress().getHostString();
-        log.info("请求来源地址"+sourceAddress);
-        log.info("请求来源地址"+request.getRemoteAddress());
-
+        log.info("请求来源地址：" + sourceAddress);
+        log.info("请求来源地址：" + request.getRemoteAddress());
         ServerHttpResponse response = exchange.getResponse();
-
-        //控制访问 鉴权部分
-        if(!IP_WHITE_LIST.contains(sourceAddress)){
+        // 2. 访问控制 - 黑白名单
+        if (!IP_WHITE_LIST.contains(sourceAddress)) {
             response.setStatusCode(HttpStatus.FORBIDDEN);
             return response.setComplete();
-
         }
+        // 3. 用户鉴权（判断 ak、sk 是否合法）
         HttpHeaders headers = request.getHeaders();
-
         String accessKey = headers.getFirst("accessKey");
         String nonce = headers.getFirst("nonce");
         String timestamp = headers.getFirst("timestamp");
         String sign = headers.getFirst("sign");
         String body = headers.getFirst("body");
         // todo 实际情况应该是去数据库中查是否已分配给用户
-        if (!accessKey.equals("paul")) {
+        User invokeUser = null;
+        try {
+            invokeUser = innerUserService.getInvokeUser(accessKey);
+        } catch (Exception e) {
+            log.error("getInvokeUser error", e);
+        }
+        if (invokeUser == null) {
             return handleNoAuth(response);
         }
-        if (Long.parseLong(nonce) > 10000) {
+
+        if (Long.parseLong(nonce) > 10000L) {
             return handleNoAuth(response);
         }
-        // 时间和当前时间不能超过五分钟
+        // 时间和当前时间不能超过 5 分钟
         Long currentTime = System.currentTimeMillis() / 1000;
-        Long FIVE_MINUTES = 60 * 5L;
-        if((currentTime - Long.parseLong(timestamp)) >= FIVE_MINUTES ){
+        final Long FIVE_MINUTES = 60 * 5L;
+        if ((currentTime - Long.parseLong(timestamp)) >= FIVE_MINUTES) {
             return handleNoAuth(response);
         }
-
-        //查secretKey
-        String serverSign = SignUtils.genSign(body,"abcdefgh");
-        if(!sign.equals(serverSign)){
+        // 实际情况中是从数据库中查出 secretKey
+        String secretKey = invokeUser.getSecretKey();
+        String serverSign = SignUtils.genSign(body, secretKey);
+        if (sign == null || !sign.equals(serverSign)) {
             return handleNoAuth(response);
         }
+        // 4. 请求的模拟接口是否存在，以及请求方法是否匹配
+        InterfaceInfo interfaceInfo = null;
+        try {
+            interfaceInfo = innerInterfaceInfoService.getInterfaceInfo(path, method);
+        } catch (Exception e) {
+            log.error("getInterfaceInfo error", e);
+        }
+        if (interfaceInfo == null) {
+            return handleNoAuth(response);
+        }
+        // todo 是否还有调用次数
+        // 5. 请求转发，调用模拟接口 + 响应日志
+        //        Mono<Void> filter = chain.filter(exchange);
+        //        return filter;
+        return handleResponse(exchange, chain, interfaceInfo.getId(), invokeUser.getId());
 
-        //请求转发，调用模拟接口
-        Mono<Void> filter = chain.filter(exchange);
-//        return handleResponse(exchange,chain);
-//        log.info("响应"+response.getStatusCode());
-//
-//        if(response.getStatusCode() != HttpStatus.OK){
-//            return handleInvokeError(response);
-//        }
-//
-//
-//        log.info("custom global filter");
-        return chain.filter(exchange);
     }
 
     public Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain, long interfaceInfoId, long userId) {
@@ -122,7 +137,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                             // 拼接字符串
                             return super.writeWith(
                                     fluxBody.map(dataBuffer -> {
-                                        // 7. 调用成功，接口调用次数 + 1 invokeCount
+                                        // 调用成功，接口调用次数 + 1 invokeCount
                                         try {
                                             innerUserInterfaceInfoService.invokeCount(interfaceInfoId, userId);
                                         } catch (Exception e) {

@@ -1,15 +1,11 @@
 package com.paul.apiPlatform.model.vo;
 
-import com.paul.apiPlatform.model.entity.InterfaceInfo;
+import com.paul.paulapicommon.model.entity.InterfaceInfo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
  * 接口信息封装视图
- *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
- * @TableName product
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
