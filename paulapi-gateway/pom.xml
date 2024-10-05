@@ -10,7 +10,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.Paul</groupId>
+    <groupId>com.paul</groupId>
     <artifactId>paulapi-gateway</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>paulapi-gateway</name>
@@ -22,7 +22,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.Paul</groupId>
+            <groupId>com.paul</groupId>
             <artifactId>paulapi-common</artifactId>
             <version>0.0.1</version>
         </dependency>
@@ -53,7 +53,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>

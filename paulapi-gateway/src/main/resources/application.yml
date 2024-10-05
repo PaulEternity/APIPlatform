@@ -14,8 +14,8 @@ spring:
           predicates:
             - Path=/api/**
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/db?characterEncoding=utf-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/db?characterEncoding=UTF-8
     username: root
     password: GYh031125
 
@@ -28,15 +28,15 @@ spring:
 #          TRACE
 
 
-
+#保持一致
 dubbo:
   application:
     name: dubbo-springboot-demo-provider
+    qosPort: 11112
   protocol:
     name: dubbo
-    port: -1
+    port: 22220
   registry:
     id: nacos-registry
     address: nacos://localhost:8848
-
 

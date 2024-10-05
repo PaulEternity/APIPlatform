@@ -39,9 +39,10 @@ paulapi: #实际根据登录用户获取ak，sk，这段不影响正常使用
 dubbo:
   application:
     name: dubbo-springboot-demo-provider
+    qosPort: 11112
   protocol:
     name: dubbo
-    port: -1
+    port: 22220
   registry:
     id: nacos-registry
     address: nacos://localhost:8848
