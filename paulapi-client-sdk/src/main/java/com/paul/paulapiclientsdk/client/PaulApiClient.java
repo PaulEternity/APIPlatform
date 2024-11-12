@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.paul.paulapiclientsdk.utils.SignUtils.genSign;
+import static com.paul.paulapiclientsdk.utils.SignUtils.getSign;
 
 
 /**
@@ -51,7 +51,7 @@ public class PaulApiClient {
         hashMap.put("nonce", RandomUtil.randomString(4));
         hashMap.put("body", body);
         hashMap.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
-        hashMap.put("sign", genSign(body, secretKey));
+        hashMap.put("sign", getSign(body, secretKey));
         return hashMap;
     }
 
