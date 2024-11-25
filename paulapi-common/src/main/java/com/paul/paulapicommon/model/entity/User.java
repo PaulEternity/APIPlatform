@@ -17,18 +17,33 @@ public class User implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
      * 用户昵称
      */
     private String userName;
-
+    /**
+     * 用户昵称
+     */
+    private String email;
     /**
      * 账号
      */
     private String userAccount;
+    /**
+     * 钱包余额（分）
+     */
+    private Integer balance;
+    /**
+     * 访问密钥
+     */
+    private String accessKey;
+    /**
+     * 密文密钥
+     */
+    private String secretKey;
 
     /**
      * 用户头像
@@ -64,8 +79,6 @@ public class User implements Serializable {
      * 是否删除
      */
 
-    private String accessKey;
-    private String secretKey;
     @TableLogic
     private Integer isDelete;
 

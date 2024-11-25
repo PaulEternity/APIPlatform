@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.paul.paulapiclientsdk.utils.SignUtils.getSign;
+import static com.paul.paulapigateway.utils.NetUtil.getIP;
 
 /**
  * 全局过滤器
@@ -82,6 +83,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         log.info("请求参数：" + request.getQueryParams());
         log.info("请求来源地址：" + sourceAddress);
         log.info("请求来源地址：" + request.getRemoteAddress());
+        log.info("接口请求IP："+ getIP((org.springframework.http.server.ServerHttpRequest) request));
         // 2. 访问控制 - 黑白名单
         if (!IP_WHITE_LIST.contains(sourceAddress)) {
             response.setStatusCode(HttpStatus.FORBIDDEN);
@@ -208,7 +210,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                     @Override
                     public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                         log.info("body instanceof Flux: {}", (body instanceof Flux));
-                        if (body instanceof Flux) {
+                        if (body instanceof Flux) {//判断是流式数据才处理
                             Flux<? extends DataBuffer> fluxBody = Flux.from(body);
                             // 往返回值里写数据
                             // 拼接字符串
@@ -222,6 +224,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                                                 throw new BusinessException(ErrorCode.OPERATION_ERROR);
                                             }
                                         },"接口调用失败");
+                                        //处理响应体数据 把dataBuffer转换成字节数组，字节数组转为字符串
                                         byte[] bytes = new byte[dataBuffer.readableByteCount()];
                                         dataBuffer.read(bytes);
                                         DataBufferUtils.release(dataBuffer);

@@ -18,7 +18,7 @@ public class NetUtil {
      * @param request
      * @return ip
      */
-    public static String getLocalIP(ServerHttpRequest request) {
+    public static String getIP(ServerHttpRequest request) {
         HttpHeaders httpHeaders = request.getHeaders();
         //以"x-forwarded-for"字段获取ip
         String ip = httpHeaders.getFirst("x-forwarded-for");

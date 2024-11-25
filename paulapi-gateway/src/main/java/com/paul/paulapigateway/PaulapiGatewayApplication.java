@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.stereotype.Service;
 
 
 @SpringBootApplication(exclude = {
@@ -18,26 +19,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 		DataSourceTransactionManagerAutoConfiguration.class,
 		HibernateJpaAutoConfiguration.class})
 @EnableDubbo
+@Service
 public class PaulapiGatewayApplication {
-
-	@DubboReference
-	private DemoService demoService;
-
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context = SpringApplication.run(PaulapiGatewayApplication.class, args);
-		PaulapiGatewayApplication application = context.getBean(PaulapiGatewayApplication.class);
-		String result = application.doSayHello("world");
-		String result2 = application.doSayHello2("world");
-		System.out.println("result: " + result);
-		System.out.println("result: " + result2);
+		SpringApplication.run(PaulapiGatewayApplication.class, args);
 	}
-
-	public String doSayHello(String name) {
-		return demoService.sayHello(name);
-	}
-
-	public String doSayHello2(String name) {
-		return demoService.sayHello2(name);
-	}
-
 }

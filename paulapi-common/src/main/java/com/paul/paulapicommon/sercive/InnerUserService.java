@@ -3,6 +3,7 @@ package com.paul.paulapicommon.sercive;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.paul.paulapicommon.model.entity.User;
+import com.paul.paulapicommon.model.vo.UserVO;
 
 
 /**
@@ -11,7 +12,7 @@ import com.paul.paulapicommon.model.entity.User;
  * @author paul
  */
 public interface InnerUserService {
-    User getInvokeUser(String accessKey);
+    UserVO getInvokeUser(String accessKey);
 
 
 }

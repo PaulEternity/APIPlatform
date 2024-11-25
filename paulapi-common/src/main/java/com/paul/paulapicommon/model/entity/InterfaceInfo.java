@@ -7,16 +7,18 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
+ * 接口信息
  * apiplatform.`interface_info`
+ *
  * @TableName interface_info
  */
-@TableName(value ="interface_info")
+@TableName(value = "interface_info")
 @Data
 public class InterfaceInfo implements Serializable {
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
@@ -25,14 +27,33 @@ public class InterfaceInfo implements Serializable {
     private Long userId;
 
     /**
+     * 返回格式
+     */
+    private String returnFormat;
+
+    /**
      * 用户名
      */
     private String name;
 
     /**
+     * 请求方法
+     */
+    private String method;
+    /**
+     * 总调用次数
+     */
+    private Long totalInvokes;
+
+    /**
      * 描述
      */
     private String description;
+
+    /**
+     * 请求示例
+     */
+    private String requestExample;
 
     /**
      * 地址
@@ -76,9 +97,14 @@ public class InterfaceInfo implements Serializable {
     private Integer isDeleted;
 
     /**
-     * 请求类型
+     * 接口请求参数
      */
-    private String method;
+    private String requestParams;
+    /**
+     * 接口响应参数
+     */
+    private String responseParams;
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

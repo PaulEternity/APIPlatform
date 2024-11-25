@@ -23,9 +23,33 @@ public class UserVO implements Serializable {
     private String userName;
 
     /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * 账号
      */
     private String userAccount;
+
+    /**
+     * 访问密钥
+     */
+    private String accessKey;
+    /**
+     * 秘密密钥
+     */
+    private String secretKey;
+
+    /**
+     * 钱包余额（分）
+     */
+    private Integer balance;
+
+    /**
+     * 邀请码
+     */
+    private String invitationCode;
 
     /**
      * 用户头像
