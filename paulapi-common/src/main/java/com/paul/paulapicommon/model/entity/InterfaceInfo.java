@@ -40,6 +40,11 @@ public class InterfaceInfo implements Serializable {
     private String url;
 
     /**
+     * 减少积分个数
+     */
+    private Integer reduceScore;
+
+    /**
      * 请求头
      */
     private String requestHeader;

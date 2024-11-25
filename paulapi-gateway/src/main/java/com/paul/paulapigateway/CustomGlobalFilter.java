@@ -2,20 +2,18 @@ package com.paul.paulapigateway;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.paul.paulapiclientsdk.utils.SignUtils;
 import com.paul.paulapicommon.model.dto.RequestParamsField;
 import com.paul.paulapicommon.model.entity.InterfaceInfo;
 import com.paul.paulapicommon.model.entity.User;
 import com.paul.paulapicommon.model.enums.InterfaceInfoStatusEnum;
-import com.paul.paulapicommon.model.vo.UserVO;
 import com.paul.paulapicommon.sercive.InnerInterfaceInfoService;
 import com.paul.paulapicommon.sercive.InnerUserInterfaceInfoService;
+import com.paul.paulapicommon.sercive.InnerUserInterfaceInvokeService;
 import com.paul.paulapicommon.sercive.InnerUserService;
 import com.paul.paulapigateway.common.ErrorCode;
 import com.paul.paulapigateway.exception.BusinessException;
 import com.paul.paulapigateway.utils.RedissonLockUtil;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.description.method.MethodDescription;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.reactivestreams.Publisher;
@@ -39,9 +37,13 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.paul.paulapiclientsdk.utils.SignUtils.getSign;
 
+/**
+ * 全局过滤器
+ */
 @Slf4j
 @Component
 public class CustomGlobalFilter implements GlobalFilter, Ordered {
@@ -49,6 +51,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
     private static final long FIVE_MINUTES = 5L * 60;
     private static final String INTERFACE_HOST = "http://localhost:8123";
 
+    public static final String CACHE_REQUEST_BODY_OBJECT_KEY = "cachedRequestBodyObject";
 
     @DubboReference
     private InnerUserService innerUserService;
@@ -58,6 +61,9 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
     @DubboReference
     private InnerUserInterfaceInfoService innerUserInterfaceInfoService;
+
+    @DubboReference
+    InnerUserInterfaceInvokeService innerUserInterfaceInvokeService;
 
     @Resource
     private RedissonLockUtil redissonLockUtil;
@@ -106,6 +112,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         }
 
         try {
+            //TODO 校验余额，用户身份
             User invokeUser = innerUserService.getInvokeUser(accessKey);
             if (invokeUser == null) {
                 throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "请先登录");
@@ -129,23 +136,65 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
             if (interfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已下线");
             }
+
             MultiValueMap<String, String> queryParams = request.getQueryParams();
+            //获取接口请求头信息
             String requestParam = interfaceInfo.getRequestHeader();
+            //解析json请求格式
             List<RequestParamsField> list = new Gson().fromJson(requestParam,
                     new TypeToken<HashMap<String, Object>>() {
                     }.getType());
             if("POST".equals(method)) {
-                Object cacheBody = exchange.getAttribute(CACHE_REQUEST_BODY_OBJECT_KEY)
+                Object cacheBody = exchange.getAttribute(CACHE_REQUEST_BODY_OBJECT_KEY);
+                String requestBody = getPostRequestBody((Flux<DataBuffer>) cacheBody);
+                log.info("Post请求参数" + requestBody);
+                MultiValueMap<String,Object> map = new Gson().fromJson(requestBody,new TypeToken<HashMap<String, Object>>() {
+                }.getType());
+                if(StringUtils.isNotBlank(requestBody)) {
+                    for (RequestParamsField field : list) {
+                        if("是".equals(field.getRequired())){
+                            //请求中不包含或者包含的字段为空
+                            if (StringUtils.isBlank((CharSequence) map.get(field.getFieldName())) || !map.containsKey(field.getFieldName())) {
+                                throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "请求参数有误，" + field.getFieldName() + "为必选项");
+                            }
+                        }
+                    }
+                }
+            }else if("GET".equals(method)){
+                log.info("GET请求参数"+request.getQueryParams());
+                if(StringUtils.isNotBlank(requestParam)){
+                    for(RequestParamsField field : list){
+                        if("是".equals(field.getRequired())){
+                            if(StringUtils.isBlank(queryParams.getFirst(field.getFieldName())) || !queryParams.containsKey(field.getFieldName())){
+                                throw new BusinessException(ErrorCode.FORBIDDEN_ERROR);
+                            }
+                        }
+                    }
+                }
             }
-
+            return handleResponse(exchange,chain,invokeUser,interfaceInfo);
         } catch (Exception e) {
-            log.error("getInvokeUser error", e);
+            throw new BusinessException(ErrorCode.FORBIDDEN_ERROR,e.getMessage());
         }
-
-
     }
 
-    public Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain, long interfaceInfoId, long userId) {
+    /**
+     * 获取post请求
+     * @param body
+     * @return
+     */
+    private String getPostRequestBody(Flux<DataBuffer> body) {
+        AtomicReference<String> getBody = new AtomicReference<>();
+        body.subscribe(dataBuffer -> {
+            byte[] bytes = new byte[dataBuffer.readableByteCount()];
+            dataBuffer.read(bytes);
+            DataBufferUtils.release(dataBuffer);
+            getBody.set(new String(bytes, StandardCharsets.UTF_8));
+        });
+        return getBody.get();
+    }
+
+    public Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain, User invokeUser, InterfaceInfo interfaceInfo) {
         try {
             ServerHttpResponse originalResponse = exchange.getResponse();
             // 缓存数据的工厂
@@ -165,24 +214,20 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                             // 拼接字符串
                             return super.writeWith(
                                     fluxBody.map(dataBuffer -> {
-                                        // 调用成功，接口调用次数 + 1 invokeCount
-                                        try {
-                                            innerUserInterfaceInfoService.invokeCount(interfaceInfoId, userId);
-                                        } catch (Exception e) {
-                                            log.error("invokeCount error", e);
-                                        }
-                                        byte[] content = new byte[dataBuffer.readableByteCount()];
-                                        dataBuffer.read(content);
-                                        DataBufferUtils.release(dataBuffer);//释放掉内存
-                                        // 构建日志
-                                        StringBuilder sb2 = new StringBuilder(200);
-                                        List<Object> rspArgs = new ArrayList<>();
-                                        rspArgs.add(originalResponse.getStatusCode());
-                                        String data = new String(content, StandardCharsets.UTF_8); //data
-                                        sb2.append(data);
-                                        // 打印日志
+                                        redissonLockUtil.redissonDistributedLocks(("gateway_"+ invokeUser.getUserAccount()).intern(),() -> {
+                                            boolean invoke = innerUserInterfaceInvokeService
+                                                    .invoke(interfaceInfo.getId(),invokeUser.getId(),interfaceInfo.getReduceScore());
+
+                                            if(!invoke){
+                                                throw new BusinessException(ErrorCode.OPERATION_ERROR);
+                                            }
+                                        },"接口调用失败");
+                                        byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                                        dataBuffer.read(bytes);
+                                        DataBufferUtils.release(dataBuffer);
+                                        String data = new String(bytes, StandardCharsets.UTF_8);
                                         log.info("响应结果：" + data);
-                                        return bufferFactory.wrap(content);
+                                        return bufferFactory.wrap(bytes);
                                     }));
                         } else {
                             // 8. 调用失败，返回一个规范的错误码
@@ -204,7 +249,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return -1;
+        return Ordered.HIGHEST_PRECEDENCE + 100;
     }
 
     public Mono<Void> handleNoAuth(ServerHttpResponse response) {
