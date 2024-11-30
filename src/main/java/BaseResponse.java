@@ -1,5 +1,6 @@
 package com.paul.paulapigateway.common;
 
+import com.paul.apiPlatform.common.ErrorCode;
 import lombok.Data;
 
 import java.io.Serializable;

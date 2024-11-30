@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.paul.paulapicommon.model.dto.RequestParamsField;
 import com.paul.paulapicommon.model.entity.InterfaceInfo;
-import com.paul.paulapicommon.model.entity.User;
 import com.paul.paulapicommon.model.enums.InterfaceInfoStatusEnum;
+import com.paul.paulapicommon.model.vo.UserVO;
 import com.paul.paulapicommon.sercive.InnerInterfaceInfoService;
 import com.paul.paulapicommon.sercive.InnerUserInterfaceInfoService;
 import com.paul.paulapicommon.sercive.InnerUserInterfaceInvokeService;
@@ -85,10 +85,10 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         log.info("请求来源地址：" + request.getRemoteAddress());
         log.info("接口请求IP："+ getIP((org.springframework.http.server.ServerHttpRequest) request));
         // 2. 访问控制 - 黑白名单
-        if (!IP_WHITE_LIST.contains(sourceAddress)) {
-            response.setStatusCode(HttpStatus.FORBIDDEN);
-            return response.setComplete();
-        }
+//        if (!IP_WHITE_LIST.contains(sourceAddress)) {
+//            response.setStatusCode(HttpStatus.FORBIDDEN);
+//            return response.setComplete();
+//        }
         return verifyParameters(exchange, chain);
     }
 
@@ -115,7 +115,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
         try {
             //TODO 校验余额，用户身份
-            User invokeUser = innerUserService.getInvokeUser(accessKey);
+            UserVO invokeUser = innerUserService.getInvokeUser(accessKey);
             if (invokeUser == null) {
                 throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "请先登录");
             }
@@ -196,7 +196,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         return getBody.get();
     }
 
-    public Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain, User invokeUser, InterfaceInfo interfaceInfo) {
+    public Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain, UserVO invokeUser, InterfaceInfo interfaceInfo) {
         try {
             ServerHttpResponse originalResponse = exchange.getResponse();
             // 缓存数据的工厂
