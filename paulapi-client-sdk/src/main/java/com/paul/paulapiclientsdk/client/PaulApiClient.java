@@ -6,7 +6,9 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.paul.paulapiclientsdk.model.User;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
@@ -19,9 +21,10 @@ import static com.paul.paulapiclientsdk.utils.SignUtils.getSign;
  * 调用第三方接口的客户端
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaulApiClient {
 
-    private final String GATEWAY_HOST = "http://localhost:8090";
     private String accessKey;
     private String secretKey;
 
