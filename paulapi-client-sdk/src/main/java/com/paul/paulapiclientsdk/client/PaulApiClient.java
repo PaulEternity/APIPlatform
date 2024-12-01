@@ -1,20 +1,8 @@
 package com.paul.paulapiclientsdk.client;
 
-import cn.hutool.core.util.RandomUtil;
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONUtil;
-import com.paul.paulapiclientsdk.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.paul.paulapiclientsdk.utils.SignUtils.getSign;
 
 
 /**

@@ -1,1 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.paul.paulapiclientsdk.PaulApiClientConfig
+#org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.paul.paulapiclientsdk.PaulApiClientConfig
+icu.paul.paulapisdk.config.PaulApiClientConfig
