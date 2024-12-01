@@ -7,7 +7,6 @@ import java.io.Serializable;
 
 @Data
 @Accessors(chain = true)
-public class IpInfoParams implements Serializable {
-    private static final long serialVersionUID = 1351620053294063854L;
-    private String ip;
+public class LoveParams  implements Serializable {
+    private static final long serialVersionUID = 8451166727994135315L;
 }

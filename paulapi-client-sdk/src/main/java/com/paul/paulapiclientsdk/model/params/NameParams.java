@@ -8,6 +8,6 @@ import java.io.Serializable;
 @Data
 @Accessors(chain = true)
 public class NameParams implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 5198275554324650097L;
     private String name;
 }

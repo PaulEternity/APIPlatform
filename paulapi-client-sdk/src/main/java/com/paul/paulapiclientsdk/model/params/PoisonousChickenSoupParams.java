@@ -6,5 +6,5 @@ import java.io.Serializable;
 
 @Data
 public class PoisonousChickenSoupParams implements Serializable {
-    private static final long serialVersionUID = 6780304705054922802L;
+    private static final long serialVersionUID = 3881890653095099587L;
 }

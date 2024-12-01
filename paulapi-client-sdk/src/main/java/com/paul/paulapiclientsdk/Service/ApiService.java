@@ -2,8 +2,8 @@ package com.paul.paulapiclientsdk.Service;
 
 import com.paul.paulapiclientsdk.client.PaulApiClient;
 import com.paul.paulapiclientsdk.exception.ApiException;
-import com.paul.paulapiclientsdk.model.request.BaseRequest;
-import com.paul.paulapiclientsdk.model.request.RandomWallpaperRequest;
+import com.paul.paulapiclientsdk.model.request.*;
+import com.paul.paulapiclientsdk.model.response.LoveResponse;
 import com.paul.paulapiclientsdk.model.response.PoisonousChickenSoupResponse;
 import com.paul.paulapiclientsdk.model.response.RandomWallpaperResponse;
 import com.paul.paulapiclientsdk.model.response.ResultResponse;
@@ -48,5 +48,49 @@ public interface ApiService {
 
 
     RandomWallpaperResponse getRandomWallpaper(PaulApiClient paulApiClient,RandomWallpaperRequest request) throws ApiException;
+
+    /**
+     * 随机情话
+     *
+     * @return
+     * @throws ApiException
+     */
+    LoveResponse randomLoveTalk() throws ApiException;
+
+    LoveResponse randomLoveTalk(PaulApiClient paulApiClient) throws ApiException;
+
+    /**
+     * 天气信息
+     * @param paulApiClient
+     * @param request
+     * @return
+     * @throws ApiException
+     */
+    ResultResponse getWeatherInfo(PaulApiClient paulApiClient, WeatherRequest request) throws ApiException;
+
+    ResultResponse getWeatherInfo(WeatherRequest request) throws ApiException;
+
+    /**
+     * 星座运势
+     * @param request
+     * @return
+     * @throws ApiException
+     */
+    ResultResponse getHoroscope(HoroscopeRequest request) throws ApiException;
+
+    ResultResponse getHoroscope(HoroscopeRequest request, PaulApiClient paulApiClient) throws ApiException;
+
+
+    /**
+     * 获取Ip地址
+     * @param paulApiClient
+     * @param ipInfoRequest
+     * @return
+     * @throws ApiException
+     */
+    ResultResponse getIpInfo(PaulApiClient paulApiClient,IpInfoRequest ipInfoRequest) throws ApiException;
+
+    ResultResponse getIpInfo(IpInfoRequest ipInfoRequest) throws ApiException;
+
 
 }
