@@ -3,7 +3,7 @@ package com.paul.apiPlatform.common;
 /**
  * 返回工具类
  *
- * @author yupi
+ * @author paul
  */
 public class ResultUtils {
 

@@ -1,6 +1,7 @@
-package com.paul.apiPlatform.exception;
+package com.paul.paulapicommon.exception;
 
-import com.paul.apiPlatform.common.ErrorCode;
+
+import com.paul.paulapicommon.common.ErrorCode;
 
 /**
  * 自定义异常类
